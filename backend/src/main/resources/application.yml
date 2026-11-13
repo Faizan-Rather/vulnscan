@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: vulnscan
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/vulnscan?serverTimezone=UTC}
+    username: ${DB_USER:vulnscan}
+    password: ${DB_PASSWORD:vulnscan123}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
