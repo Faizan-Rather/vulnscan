@@ -13,6 +13,7 @@ vulnscan:
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
     expiration-minutes: 120
+  osv-url: https://api.osv.dev/v1/query
 server:
   error:
     include-message: always
