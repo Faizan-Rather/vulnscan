@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
 import java.time.Instant;
 import java.util.List;
 
@@ -53,5 +53,10 @@ public class ProjectController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id, Authentication auth) {
         service.delete(id, auth.getName());
+    }
+    @PostMapping(value = "/{id}/upload", consumes = "multipart/form-data")
+    public ProjectResponse upload(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                                  Authentication auth) {
+        return ProjectResponse.of(service.uploadSource(id, auth.getName(), file));
     }
 }

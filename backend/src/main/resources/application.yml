@@ -9,11 +9,16 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 vulnscan:
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
     expiration-minutes: 120
   osv-url: https://api.osv.dev/v1/query
+  storage-dir: ${STORAGE_DIR:./storage}
 server:
   error:
     include-message: always

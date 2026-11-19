@@ -7,7 +7,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.backend.backend.security.SafeZipExtractor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
 import java.util.List;
 
 @Service
@@ -16,7 +25,8 @@ public class ProjectService {
 
     private final ProjectRepository projects;
     private final UserRepository users;
-
+    @Value("${vulnscan.storage-dir}")
+    private String storageDir;
     public Project create(String email, String name, ScanType type, String targetUrl) {
         if (type == ScanType.WEB && (targetUrl == null || targetUrl.isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetUrl is required for WEB projects");
@@ -45,5 +55,31 @@ public class ProjectService {
 
     public void delete(Long id, String email) {
         projects.delete(getOwned(id, email));
+    }
+    public Project uploadSource(Long id, String email, MultipartFile file) {
+        Project project = getOwned(id, email);
+        if (project.getType() != ScanType.CODE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only CODE projects accept uploads");
+        }
+
+        Path dir = Path.of(storageDir, String.valueOf(project.getId())).toAbsolutePath().normalize();
+        try (InputStream in = file.getInputStream()) {
+            deleteRecursively(dir);              // clear out any previous upload for this project
+            SafeZipExtractor.extract(in, dir);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid archive: " + e.getMessage());
+        }
+
+        project.setSourcePath(dir.toString());
+        return projects.save(project);
+    }
+
+    private static void deleteRecursively(Path dir) throws IOException {
+        if (!Files.exists(dir)) return;
+        try (Stream<Path> walk = Files.walk(dir)) {
+            for (Path p : walk.sorted(Comparator.reverseOrder()).toList()) {
+                Files.delete(p);
+            }
+        }
     }
 }
