@@ -1,16 +1,28 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Projects from './pages/Projects'
+import ProtectedRoute from './pages/ProtectedRoute'
 
-function App() {
-  const [status, setStatus] = useState('checking...')
-
-  useEffect(() => {
-    axios.get('/api/health')
-        .then(r => setStatus(r.data.status))
-        .catch(() => setStatus('backend unreachable'))
-  }, [])
-
-  return <h1>VulnScan backend: {status}</h1>
+export default function App() {
+  return (
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+                path="/projects"
+                element={
+                  <ProtectedRoute>
+                    <Projects />
+                  </ProtectedRoute>
+                }
+            />
+            <Route path="/" element={<Navigate to="/projects" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+  )
 }
-
-export default App
