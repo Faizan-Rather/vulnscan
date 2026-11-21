@@ -4,7 +4,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Projects from './pages/Projects'
 import ProtectedRoute from './pages/ProtectedRoute'
-
+import ProjectDetail from './pages/ProjectDetail'
 export default function App() {
   return (
       <AuthProvider>
@@ -20,6 +20,14 @@ export default function App() {
                   </ProtectedRoute>
                 }
             />
+              <Route
+                  path="/projects/:id"
+                  element={
+                      <ProtectedRoute>
+                          <ProjectDetail />
+                      </ProtectedRoute>
+                  }
+              />
             <Route path="/" element={<Navigate to="/projects" replace />} />
           </Routes>
         </BrowserRouter>
