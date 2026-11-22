@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getProject, uploadSource } from '../api/projects'
-
+import { startScan, listScans } from '../api/scans'
 export default function ProjectDetail() {
     const { id } = useParams()
     const [project, setProject] = useState(null)
@@ -11,7 +11,8 @@ export default function ProjectDetail() {
     const [file, setFile] = useState(null)
     const [uploading, setUploading] = useState(false)
     const [uploadMessage, setUploadMessage] = useState('')
-
+    const [scans, setScans] = useState([])
+    const [starting, setStarting] = useState(false)
     async function loadProject() {
         setLoading(true)
         try {
@@ -23,10 +24,19 @@ export default function ProjectDetail() {
             setLoading(false)
         }
     }
-
+    async function loadScans() {
+        try {
+            const data = await listScans(id)
+            setScans(data)
+        } catch {
+            // Not fatal if this fails; the project itself still shows.
+        }
+    }
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        loadProject().then()
+        loadProject()
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadScans()
     }, [id])
 
     async function handleUpload(e) {
@@ -40,13 +50,25 @@ export default function ProjectDetail() {
             setUploadMessage('Upload successful. You can now start a scan.')
             setFile(null)
             await loadProject()
+            await loadScans()
         } catch (err) {
             setError(err.response?.data?.message || 'Upload failed')
         } finally {
             setUploading(false)
         }
     }
-
+    async function handleStartScan() {
+        setStarting(true)
+        setError('')
+        try {
+            await startScan(id)
+            await loadScans()
+        } catch (err) {
+            setError(err.response?.data?.message || 'Could not start scan')
+        } finally {
+            setStarting(false)
+        }
+    }
     if (loading) return <p style={{ padding: 32 }}>Loading...</p>
     if (!project) return <p style={{ padding: 32 }}>{error || 'Project not found'}</p>
 
@@ -75,9 +97,40 @@ export default function ProjectDetail() {
                 </div>
             )}
 
+            <div style={{ margin: '24px 0' }}>
+                <button onClick={handleStartScan} disabled={starting}>
+                    {starting ? 'Starting...' : 'Start scan'}
+                </button>
+            </div>
+
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
-            <p style={{ color: '#666' }}>Scan history and results arrive on Day 10 to 11.</p>
+            <h3>Scan history</h3>
+            {scans.length === 0 ? (
+                <p style={{ color: '#666' }}>No scans yet.</p>
+            ) : (
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {scans.map((s) => (
+                        <li
+                            key={s.id}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: 10,
+                                borderBottom: '1px solid #eee',
+                            }}
+                        >
+                            <Link to={`/scans/${s.id}`}>
+                                Scan #{s.id} — {s.status}
+                                {s.riskScore != null ? ` (risk ${s.riskScore})` : ''}
+                            </Link>
+                            <span style={{ color: '#666' }}>
+                {new Date(s.createdAt).toLocaleString()}
+              </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     )
 }

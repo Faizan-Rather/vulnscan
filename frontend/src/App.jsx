@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import Projects from './pages/Projects'
 import ProtectedRoute from './pages/ProtectedRoute'
 import ProjectDetail from './pages/ProjectDetail'
+import ScanResult from './pages/ScanResult'
 export default function App() {
   return (
       <AuthProvider>
@@ -25,6 +26,14 @@ export default function App() {
                   element={
                       <ProtectedRoute>
                           <ProjectDetail />
+                      </ProtectedRoute>
+                  }
+              />
+              <Route
+                  path="/scans/:id"
+                  element={
+                      <ProtectedRoute>
+                          <ScanResult />
                       </ProtectedRoute>
                   }
               />
