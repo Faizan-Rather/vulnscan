@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getScan } from '../api/scans'
 import FindingsTable from '../components/FindingsTable'
-
+import SeverityChart from '../components/SeverityChart'
 export default function ScanResult() {
     const { id } = useParams()
     const [scan, setScan] = useState(null)
@@ -48,19 +48,7 @@ export default function ScanResult() {
                 <p style={{ color: 'red' }}>Error: {scan.errorMessage || 'Unknown error'}</p>
             )}
 
-            {scan.summary && (
-                <div style={{ display: 'flex', gap: 16, margin: '16px 0' }}>
-                    {Object.entries(scan.summary).map(([severity, count]) => (
-                        <div
-                            key={severity}
-                            style={{ padding: '8px 16px', border: '1px solid #ccc', textAlign: 'center' }}
-                        >
-                            <div style={{ fontSize: 20, fontWeight: 'bold' }}>{count}</div>
-                            <div style={{ color: '#666' }}>{severity}</div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <SeverityChart summary={scan.summary} />
 
             {scan.status === 'COMPLETED' && <FindingsTable scanId={scan.id} />}
         </div>

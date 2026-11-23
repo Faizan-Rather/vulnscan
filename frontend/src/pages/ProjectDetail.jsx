@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getProject, uploadSource } from '../api/projects'
 import { startScan, listScans } from '../api/scans'
+import RiskTrend from '../components/RiskTrend'
 export default function ProjectDetail() {
     const { id } = useParams()
     const [project, setProject] = useState(null)
@@ -104,7 +105,7 @@ export default function ProjectDetail() {
             </div>
 
             {error && <p style={{ color: 'red' }}>{error}</p>}
-
+            <RiskTrend scans={scans} />
             <h3>Scan history</h3>
             {scans.length === 0 ? (
                 <p style={{ color: '#666' }}>No scans yet.</p>

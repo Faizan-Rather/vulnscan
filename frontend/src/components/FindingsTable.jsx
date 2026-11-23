@@ -16,7 +16,7 @@ export default function FindingsTable({ scanId }) {
     const [page, setPage] = useState(0)
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(true)
-
+    const [expandedId, setExpandedId] = useState(null)
     async function load() {
         setLoading(true)
         try {
@@ -68,31 +68,64 @@ export default function FindingsTable({ scanId }) {
                         </thead>
                         <tbody>
                         {data.content.map((f) => (
-                            <tr key={f.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: 8 }}>
-                    <span
-                        style={{
-                            color: '#fff',
-                            background: SEVERITY_COLORS[f.severity] || '#555',
-                            padding: '2px 8px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                        }}
-                    >
-                      {f.severity}
-                    </span>
-                                </td>
-                                <td style={{ padding: 8 }}>
-                                    <div>{f.title}</div>
-                                    {f.description && (
-                                        <div style={{ color: '#666', fontSize: 13 }}>{f.description}</div>
-                                    )}
-                                </td>
-                                <td style={{ padding: 8, fontFamily: 'monospace', fontSize: 13 }}>
-                                    {f.filePath || '—'}
-                                </td>
-                                <td style={{ padding: 8, fontSize: 13 }}>{f.remediation || '—'}</td>
-                            </tr>
+                            <>
+                                <tr
+                                    key={f.id}
+                                    onClick={() => setExpandedId(expandedId === f.id ? null : f.id)}
+                                    style={{ borderBottom: '1px solid #eee', cursor: 'pointer' }}
+                                >
+                                    <td style={{ padding: 8 }}>
+                                  <span
+                                      style={{
+                                          color: '#fff',
+                                          background: SEVERITY_COLORS[f.severity] || '#555',
+                                          padding: '2px 8px',
+                                          borderRadius: 4,
+                                          fontSize: 12,
+                                      }}
+                                  >
+                        {f.severity}
+                        </span>
+                                    </td>
+                                    <td style={{ padding: 8 }}>
+                                        <div>{f.title}</div>
+                                        {f.description && (
+                                            <div style={{ color: '#666', fontSize: 13 }}>{f.description}</div>
+                                        )}
+                                    </td>
+                                    <td style={{ padding: 8, fontFamily: 'monospace', fontSize: 13 }}>
+                                        {f.filePath || '—'}
+                                    </td>
+                                    <td style={{ padding: 8, fontSize: 13 }}>{f.remediation || '—'}</td>
+                                </tr>
+                                {expandedId === f.id && (
+                                    <tr key={`${f.id}-detail`} style={{ background: 'rgba(0,0,0,0.03)' }}>
+                                        <td colSpan={4} style={{ padding: 16 }}>
+                                            <div style={{ marginBottom: 8 }}>
+                                                <strong>Check:</strong> {f.checkId}
+                                            </div>
+                                            {f.evidence && (
+                                                <div style={{ marginBottom: 8 }}>
+                                                    <strong>Evidence:</strong>
+                                                    <pre style={{ background: '#1e1e1e', color: '#eee', padding: 10, borderRadius: 4, overflowX: 'auto', margin: '4px 0' }}>
+                              {f.evidence}
+                            </pre>
+                                                </div>
+                                            )}
+                                            {f.lineNumber != null && (
+                                                <div style={{ marginBottom: 8 }}>
+                                                    <strong>Line:</strong> {f.lineNumber}
+                                                </div>
+                                            )}
+                                            {f.owaspCategory && (
+                                                <div>
+                                                    <strong>OWASP category:</strong> {f.owaspCategory}
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+                            </>
                         ))}
                         </tbody>
                     </table>
